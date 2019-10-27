@@ -31,24 +31,24 @@ public:
     shared_ptr<Token> op;
     Expression* second;
 
-    BinaryExpression(Expression* first, shared_ptr<Token>&& op, Expression* second) : first(first), op(op), second(second) {};
+    BinaryExpression(Expression* first, shared_ptr<Token> op, Expression* second) : first(first), op(op), second(second) {};
     Value* accept(ExpressionVisitor* visitor);
 };
 class UnaryExpression: public Expression
 {
 public:
-    Token* op;
+    shared_ptr<Token> op;
     Expression* expression;
 
-    UnaryExpression(Token* op, Expression* expression) : op(op), expression(expression) {};
+    UnaryExpression(shared_ptr<Token> op, Expression* expression) : op(op), expression(expression) {};
     Value* accept(ExpressionVisitor* visitor);
 };
 class LiteralExpression: public Expression
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
 
-    LiteralExpression(Token* token) : token(token) {};
+    LiteralExpression(shared_ptr<Token> token) : token(token) {};
     Value* accept(ExpressionVisitor* visitor);
 };
 class GroupingExpression: public Expression
@@ -62,31 +62,31 @@ public:
 class VariableExpression: public Expression
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
 
-    VariableExpression(Token* token) : token(token) {};
+    VariableExpression(shared_ptr<Token> token) : token(token) {};
     Value* accept(ExpressionVisitor* visitor);
 };
 class CallExpression: public Expression
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
     Expression* callee;
     vector<Expression*> arguments;
     bool index;
 
-    CallExpression(Token* token, Expression* callee, vector<Expression*> arguments, bool index = false) :
+    CallExpression(shared_ptr<Token> token, Expression* callee, vector<Expression*> arguments, bool index = false) :
             token(token), callee(callee), arguments(arguments), index(index) {};
     Value* accept(ExpressionVisitor* visitor);
 };
 class FunctionExpression: public Expression
 {
 public:
-    Token* token;
-    vector<Token*> arguments;
+    shared_ptr<Token> token;
+    vector<shared_ptr<Token>> arguments;
     Statement* action;
 
-    FunctionExpression(Token* token, vector<Token*> arguments, Statement* action) :
+    FunctionExpression(shared_ptr<Token> token, vector<shared_ptr<Token>> arguments, Statement* action) :
             token(token), arguments(arguments), action(action) {};
     Value* accept(ExpressionVisitor* visitor);
 };
@@ -104,10 +104,10 @@ class GetExpression: public Expression
 {
 public:
     Expression* callee;
-    Token* token;
+    shared_ptr<Token> token;
     string name;
 
-    GetExpression(Expression* callee, Token* token, string name = "") :
+    GetExpression(Expression* callee, shared_ptr<Token> token, string name = "") :
             callee(callee), token(token), name(name) {};
     Value* accept(ExpressionVisitor* visitor);
 };
@@ -140,10 +140,10 @@ public:
 class CommandStatement : public Statement
 {
 public:
-    Token* command;
+    shared_ptr<Token> command;
     Expression* expression;
 
-    CommandStatement(Token* command, Expression* expression): command(command), expression(expression) {};
+    CommandStatement(shared_ptr<Token> command, Expression* expression): command(command), expression(expression) {};
     void accept(StatementVisitor* visitor);
 };
 class IfStatement : public Statement
@@ -170,20 +170,20 @@ public:
 class AssignStatement : public Statement
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
     Expression* value;
 
-    AssignStatement(Token* identifier, Expression* value): token(identifier), value(value) {};
+    AssignStatement(shared_ptr<Token> identifier, Expression* value): token(identifier), value(value) {};
     void accept(StatementVisitor* visitor);
 };
 class SetStatement : public Statement
 {
 public:
     Expression* callee;
-    Token* name;
+    shared_ptr<Token> name;
     Expression* value;
 
-    SetStatement(Expression* callee, Token* name, Expression* value): callee(callee), name(name), value(value) {};
+    SetStatement(Expression* callee, shared_ptr<Token> name, Expression* value): callee(callee), name(name), value(value) {};
     void accept(StatementVisitor* visitor);
 };
 class TryStatement : public Statement
@@ -191,11 +191,11 @@ class TryStatement : public Statement
 public:
     Statement* action;
     vector<Expression*> filters;
-    vector<pair<Token*, Statement*>> catches;
+    vector<pair<shared_ptr<Token>, Statement*>> catches;
     Statement* elseAction;
     Statement* finallyAction;
 
-    TryStatement(Statement *action, vector<Expression *> filters, vector<pair<Token*, Statement*>> catches,
+    TryStatement(Statement *action, vector<Expression *> filters, vector<pair<shared_ptr<Token>, Statement*>> catches,
                  Statement *elseAction, Statement *finallyAction) :
             action(action), filters(filters), catches(catches),
             elseAction(elseAction), finallyAction(finallyAction) {};
@@ -204,11 +204,11 @@ public:
 class ForStatement : public Statement
 {
 public:
-    Token* name;
+    shared_ptr<Token> name;
     Expression* iterator;
     Statement* action;
 
-    ForStatement(Token* name, Expression* iterator, Statement* action) :
+    ForStatement(shared_ptr<Token> name, Expression* iterator, Statement* action) :
             name(name), iterator(iterator), action(action) {};
     void accept(StatementVisitor* visitor);
 };
@@ -276,7 +276,7 @@ private:
     Statement* classStatement();
 
     shared_ptr<Token> next();
-    Token* peek();
+    shared_ptr<Token> peek();
     shared_ptr<Token> currentToken();
     bool nextMatch(TokenType type);
     bool isAtEnd();
@@ -290,7 +290,7 @@ private:
     Expression* parseBinary(function<Expression*()> parseFunction, initializer_list<TokenType> typesList);
 public:
     explicit Parser(vector<shared_ptr<Token>>&& tokens): tokens(move(tokens)) {};
-    vector<Statement> parse();
+    vector<Statement*> parse();
 };
 
 

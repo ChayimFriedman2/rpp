@@ -19,7 +19,7 @@ Expression *Parser::funktion() {
     if (match(OpenParen))
     {
         auto token = next();
-        vector<Token*> arguments;
+        vector<shared_ptr<Token>> arguments;
 
         if (match(Identifier))
             do
@@ -215,7 +215,7 @@ Statement *Parser::whileStatement() {
 Statement *Parser::tryStatement() {
     Statement* action = actionStatement();
     vector<Expression*> filters;
-    vector<pair<Token*, Statement*>> catches;
+    vector<pair<shared_ptr<Token>, Statement*>> catches;
     while (indentedMatch(Catch))
     {
         filters.push_back(expression());
@@ -224,9 +224,9 @@ Statement *Parser::tryStatement() {
         {
             auto identifier = next();
             Statement* catchAction = actionStatement();
-            catches.push_back(pair<Token*, Statement*>(identifier, catchAction));
+            catches.push_back(pair<shared_ptr<Token>, Statement*>(identifier, catchAction));
         } else
-            catches.push_back(pair<Token*, Statement*>(nullptr, actionStatement()));
+            catches.push_back(pair<shared_ptr<Token>, Statement*>(nullptr, actionStatement()));
     }
 
     if (!filters.size())
@@ -349,8 +349,8 @@ shared_ptr<Token> Parser::next() {
 }
 
 // no ownership changes
-Token* Parser::peek() {
-    return tokens[current].get();
+shared_ptr<Token> Parser::peek() {
+    return tokens[current];
 }
 
 // ownership *transfer* from vector

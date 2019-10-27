@@ -128,7 +128,7 @@ Value *Interpreter::evaluateVariable(VariableExpression *variable) {
 
 Value *Interpreter::evaluateCall(CallExpression *call) {
     Value *callee = evaluate(call->callee);
-    Token *token = call->token;
+    shared_ptr<Token> token = call->token;
     callee->token = token;
     currentToken = token;
     vector<Value *> arguments;
@@ -157,7 +157,7 @@ Value *Interpreter::evaluateCall(CallExpression *call) {
 Value *Interpreter::evaluateFunction(FunctionExpression *function) {
     vector<string> arguments;
 
-    for (Token *token : function->arguments)
+    for (shared_ptr<Token> token : function->arguments)
         arguments.push_back(*(string *) token->value);
 
     return new Value(new DeclaredFunction(arguments, function->action));
@@ -355,7 +355,7 @@ void Interpreter::executeTry(TryStatement *statement) {
     } catch (Value *value) {
         for (int i = 0; i < statement->filters.size(); i++)
             if (isInstance(value, evaluate(statement->filters[i]))) {
-                Token *name = statement->catches[i].first;
+                shared_ptr<Token> name = statement->catches[i].first;
 
                 if (name) {
                     Environment *newEnvironment = new Environment(environment);
@@ -491,7 +491,7 @@ void Interpreter::print(Value *value, bool printNone, bool printEndLine) {
     }
 }
 
-void Interpreter::runtimeError(Token *token, string message) {
+void Interpreter::runtimeError(shared_ptr<Token> token, string message) {
     if (token)
         throw RPPException("Runtime Error", token->errorSignature(), message);
     throw RPPException("Runtime Error", "", message);
@@ -501,7 +501,7 @@ void Interpreter::runtimeError(string message) {
     runtimeError(currentToken, message);
 }
 
-void Interpreter::nameError(Token *token, string name) {
+void Interpreter::nameError(shared_ptr<Token> token, string name) {
     throw RPPException("Name error", token->errorSignature(),
                        name + " is not defined");
 }
@@ -517,7 +517,7 @@ bool Interpreter::isInstance(Value *obj, Value *cls) {
     return obj->getInstance()->klass == cls->getClass();
 }
 
-Value *Interpreter::createInstance(Value *callee, Token *token, const vector<Value *> &arguments) {
+Value *Interpreter::createInstance(Value *callee, shared_ptr<Token> token, const vector<Value *> &arguments) {
     Value *instance = new Value(new InstanceValue(callee->getClass()));
     instance->token = token;
     map<string, Value *> methods;
@@ -537,7 +537,7 @@ Value *Interpreter::createInstance(Value *callee, Token *token, const vector<Val
     return instance;
 }
 
-Value *Interpreter::createString(Token *token, string *name) {
+Value *Interpreter::createString(shared_ptr<Token> token, string *name) {
     Value *instance = createInstance(globals[StringClass], token, vector<Value *>());
     instance->getInstance()->nativeAttributes["str"] = name;
     return instance;
@@ -674,7 +674,7 @@ bool Value::isString() {
 
 map<string, Value *> Interpreter::globals = {};
 
-void Interpreter::attributeError(Token *token, string callee, string name) {
+void Interpreter::attributeError(shared_ptr<Token> token, string callee, string name) {
     throw RPPException("Attribute error", token->errorSignature(),
                        callee + " has no attribute " + name);
 }

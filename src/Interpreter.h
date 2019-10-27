@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <memory>
 
 #include "Parser.h"
 
@@ -23,24 +24,24 @@ class InstanceValue;
 struct ReturnValue
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
     Value* value;
 
-    ReturnValue(Token* token, Value* value): token(token), value(value) {};
+    ReturnValue(shared_ptr<Token> token, Value* value): token(token), value(value) {};
 };
 struct ContinueValue
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
 
-    ContinueValue(Token* token): token(token) {};
+    ContinueValue(shared_ptr<Token> token): token(token) {};
 };
 struct BreakValue
 {
 public:
-    Token* token;
+    shared_ptr<Token> token;
 
-    BreakValue(Token* token): token(token) {};
+    BreakValue(shared_ptr<Token> token): token(token) {};
 };
 
 enum ValueType
@@ -52,7 +53,7 @@ class Value
 public:
     void* value;
     ValueType type;
-    Token* token = nullptr;
+    std::shared_ptr<Token> token = nullptr;
     static Value* None;
 
     Value(ValueType type, void* value): type(type), value(value) {};
@@ -158,7 +159,7 @@ class Interpreter : public ExpressionVisitor, public StatementVisitor {
 public:
     static map<string, Value*> globals;
     Environment* environment;
-    Token* currentToken;
+    shared_ptr<Token> currentToken;
 
     Interpreter() {
         environment = new Environment();
@@ -188,20 +189,20 @@ public:
     void executeTry(TryStatement* statement);
     void executeFor(ForStatement* statement);
 
-    Value *createInstance(Value *callee, Token *token, const vector<Value *> &arguments);
+    Value *createInstance(Value *callee, shared_ptr<Token> token, const vector<Value *> &arguments);
     inline Value *createInstance(Value *callee, const vector<Value *> &arguments)
         {return createInstance(callee, currentToken, arguments);};
-    Value *createString(Token *token, string *name);
+    Value *createString(shared_ptr<Token> token, string *name);
     inline Value *createString(string name)
         {return createString(currentToken, new string(name));};
     void runtimeError(string message = "unsupported operator");
-    void nameError(Token* token, string name);
-    void attributeError(Token* token, string callee, string name);
+    void nameError(shared_ptr<Token> token, string name);
+    void attributeError(shared_ptr<Token> token, string callee, string name);
     void print(Value* value, bool printNone = true, bool printEndLine = true);
     bool isInstance(Value* obj, Value* cls);
     static bool truthEvaluation(Value* value);
     static bool equalityEvaluation(Value *first, Value *second);
-    static void runtimeError(Token* token, string message = "unsupported operator");
+    static void runtimeError(shared_ptr<Token> token, string message = "unsupported operator");
 
 };
 
