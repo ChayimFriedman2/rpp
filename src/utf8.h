@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <algorithm>
 
 struct T {
     bool moved = false;
