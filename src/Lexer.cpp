@@ -154,7 +154,7 @@ void Lexer::scanString(char delimiter) {
     string::iterator start = iterator;
     while (peek() != delimiter)
     {
-        if (isAtEnd() or next() == '\n')
+        if (isAtEnd() || next() == '\n')
             throw RPPException("Unterminated string", Token::errorSignature(line, index, string(start, iterator)));
     }
 
